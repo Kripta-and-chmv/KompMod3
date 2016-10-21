@@ -1,34 +1,5 @@
-import random
-from math import factorial as fact
-
-def binom_negative(s, p, i, oper=0):
-    oper += 13
-    return fact(s + i - 1) / (fact(i) * fact(s - 1)) * p**s * (1 - p)**i
-
-def Diskret_Number(s, p, oper=0):
-    def r(s, p, i, oper):
-        oper += 5
-        return (s + i) * (1 - p) / (i + 1)
-
-    operations = 0
-    m = random.random()
-    i = 0
-
-    P = binom_negative(s, p, 0, operations)
-
-    m_greater_than_zero = m > 0
-
-    m -= P
-
-    while m_greater_than_zero:
-        P *= r(s, p, i, operations)
-        i += 1
-        m -= P
-        m_greater_than_zero = m > 0
-        operations += 4
-
-    return i, operations
-
+import standart_algorithm_with_rec as std_alg
+import puasson
 
 s = 4
 p = 0.1
@@ -42,15 +13,16 @@ p = 0.1
 #intervals_amount = len(binom_probs) - i
 
 
-ksi = Diskret_Number(s, p)
+ksi = std_alg.Diskret_Number(s, p)
 
 print(ksi)
 
-arr40 = [Diskret_Number(s, p)[0] for x in range(40)]
+arr401 = [std_alg.Diskret_Number(s, p) for x in range(40)]
+arr402 = [puasson.Puasson(40, 20) for x in range(40)]
 
-binom_probs = [binom_negative(s, p, arr40[i]) for i in range (40)]
+binom_probs = [std_alg.binom_negative(s, p, arr401[i]) for i in range (40)]
 binom_probs.sort()
 
-arr100 = [Diskret_Number(s, p) for x in range(100)]
+arr100 = [std_alg.Diskret_Number(s, p) for x in range(100)]
 
 print (arr)

@@ -6,10 +6,12 @@ from math import exp
 def CalculateProbabil(lamb, k):
     return lamb**k / fact(k) * exp(-lamb)
 
-def Puasson(seq, n, lamb):
+def Puasson(length, lamb):
+    seq = [x for x in range(1, length+1)]
+
     Q = 0
-    for i in range(1, lamb+1):
-        Q += CalculateProbabil(lamb, i)
+    for i in range(0, lamb):
+        Q += CalculateProbabil(lamb, seq[i])
 
     number = 0
 
