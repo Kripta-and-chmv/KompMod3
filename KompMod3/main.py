@@ -17,11 +17,13 @@ ksi = std_alg.Diskret_Number(s, p)
 
 print(ksi)
 
+a = std_alg.Diskret_Number(s, p)
+
 arr401 = [std_alg.Diskret_Number(s, p) for x in range(40)]
 arr402 = [puasson.Puasson(40, 20) for x in range(40)]
 
-binom_probs = [std_alg.binom_negative(s, p, arr401[i]) for i in range (40)]
-binom_probs.sort()
+binom_probs = [std_alg.binom_negative(s, p, arr401[i]) for i in range (40)].sort()
+sm = sum(binom_probs)
 
 arr100 = [std_alg.Diskret_Number(s, p) for x in range(100)]
 
