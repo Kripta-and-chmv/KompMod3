@@ -1,34 +1,36 @@
 import random
 from math import factorial as fact
 from math import exp
+import scipy
+import scipy.stats as st
 
 
 def CalculateProbabil(lamb, k):
     return lamb**k / fact(k) * exp(-lamb)
 
-def Puasson(length, lamb):
-    seq = [x for x in range(1, length+1)]
+def Puasson(length, lamb):    
+    
+    seq = [x for x in range(length)]
 
-    Q = 0
-    for i in range(0, lamb):
-        Q += CalculateProbabil(lamb, seq[i])
+    p_pois = [st.poisson.pmf(seq[i], lamb) for i in range(length)]
+    Q = sum(p_pois[:lamb + 1])
 
     number = 0
 
     p = random.random()
-    p0 = p - Q
+    p -= Q
 
-    if p0 >= 0:
-        i = lamb
-        while p0 >= 0:
-            p0 -= seq[i]
-            i += 1
-        number = i
+    if p >= 0:
+        k = lamb + 1
+        while p >= 0:
+            p -= p_pois[k]
+            k += 1
+        number = k
 
     else:
-        i = lamb - 1
-        while p0 < 0:
-            p0 += seq[i]
-            i -= 1
-        number = i
+        k = lamb
+        while p < 0:
+            p += p_pois[k]
+            k -= 1
+        number = k
     return number
