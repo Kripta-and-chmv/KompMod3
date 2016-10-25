@@ -7,7 +7,7 @@ def chisqr_test(sequence, mod, alpha, intervals_amount, drawing_graph, wfile):
     Аргументы:
         sequence - выборка, list числовых значений;
         mod - размерность алфавита выборки, int;
-        alpha - уровень значимости, float;
+        alpha - уровень значимости, double;
         intervals_amount - количество интервалов, int;
         drawing_graph - нужно ли рисовать гистограмму, bool;
         wfile - файл, куда записываются результаты теста, file.
@@ -15,83 +15,6 @@ def chisqr_test(sequence, mod, alpha, intervals_amount, drawing_graph, wfile):
         hit and hit_a2 - успешность прохождения теста по двум критериям, bool.
 
     """
-    def create_intervals(mod, intervals_amount):
-        """Разбивает отрезок от 0 до mod на интервалы.
-        Аргументы:
-            mod - верхняя граница отрезка, число;
-            intervals_amount - количество интервалов, int.
-        Вывод:
-            intervals - список с границами интервалов, list числовых значений.
-
-        """
-        intervals = []
-        intervals.append(0)
-        inter_length = mod / intervals_amount
-        last_point = inter_length
-        for i in range(intervals_amount - 1):
-            intervals.append(last_point)
-            last_point += inter_length
-        intervals.append(mod)
-        return intervals
-    K = intervals_amount
-    lngth = mod/K
-
-    intervals = [x * lngth for x in range(0, K+1)]
-
-    hits_amount = numpy.zeros(K)
-    
-    for a in sequence:
-        for j in range(K):
-            if (intervals[j] <= a < intervals[j + 1]):
-                hits_amount[j] += 1
-                break
-
-    [j < i for i, j in zip(intervals[:-1], intervals[1:])].count(True)
-
-    count = 0
-    for i in range(len(intervals) - 2):
-        if intervals[i] < intervals[i+1]:
-            count+=1
-
-
-    frequency = [c / len(sequence) for c in hits_amount]
-    k = 0
-
-    def calculate_hits_amount(intervals, sequence):
-        """Вычисляется количество элементов выборки, попавших в каждый интервал.
-        Аргументы:
-            intervals - список границ интервалов, list;
-            sequence - выборка, list числовых значений.
-        Вывод:
-            frequency - список количества попаданий для каждого интервала, list of int.
-
-        """
-        hits_amount = numpy.zeros(len(intervals) - 1)
-        length = len(sequence)
-        for i in range(length):
-            for j in range(len(intervals) - 1):
-                if (intervals[j] <= sequence[i] < intervals[j + 1]):
-                    frequency[j] += 1
-
-        return frequency
-
-    def calculate_probability_intervals(intervals, a, b):
-        """Вычисляется вероятность попадания слчайной величины в заданные
-        интервалы при равномерном распределении.
-        
-        Аргументы:
-            intervals - список границ интервалов, list;
-            a - нижняя граница функции равномерного распределения;
-            b - верхняя граница функции равномерного распределения.
-        Вывод:
-            probabil - список вероятностей для каждого интервала, list of float.
-
-        """
-        probabil = []
-        for i in range(len(intervals) - 1):
-            probabil.append((intervals[i + 1] - intervals[i]) / (b - a))
-        return probabil
-
     def draw_histogram(frequency, intervals):
         """Рисует гистограмму частот.
         Аргументы:
@@ -132,28 +55,43 @@ def chisqr_test(sequence, mod, alpha, intervals_amount, drawing_graph, wfile):
         wfile.write('Успешность прохождения по a2: %s\n' % (hit_a2))
         wfile.write('Значение a2: %s\n' % (a2))
 
-    intervals = create_intervals(mod, intervals_amount)
-    hits_amount = calculate_hits_amount(intervals, sequence)
+    # разбиваем отрезок от 0 до mod на интервалы
+    K = intervals_amount
+    lngth = mod/K   
+    intervals = [x * lngth for x in range(0, K+1)]
+    
+    #определяем количество попаданий в интервалы
+    hits_amount = []    
+    for a, b in zip(intervals[:-1], intervals[1:]):
+            count = sum([a <= x < b for x in sequence])
+            hits_amount.append(count)
+    #определяем частоту попаданий
+    len_seq = len(sequence)
+    frequency = [c / len_seq for c in hits_amount]
 
-    probabil = calculate_probability_intervals(intervals, 0, mod)
+    # Вычисляется вероятность попадания слчайной величины в заданные
+    # интервалы при равномерном распределении.
+    def calc_prob(top, bott, intervals):
+        return [(x - y) / (top - bott) for x, y in zip(intervals[1:], intervals[:-1])]
 
-    if(drawing_graph is True):
+    probabils = calc_probs(0, mod, intervals)
+
+
+    if drawing_graph is True:
         draw_histogram(hits_amount, intervals)
 
     # вычисляется статистика
-    addition = 0
-    for i in range(intervals_amount):
-        addition += (hits_amount[i] / len(sequence) -
-                     probabil[i]) ** 2 / probabil[i]
-    S = len(sequence) * addition
+    addition = sum([(hits / len_seq - probs)**2 / probs for hits, probs in zip(hits_amount, probabils)])
 
-    # вычисляется a2
+    S = len_seq * addition
+
+    # вычисляется S*
     r = 5
     def integrand(x, r):
         return x ** (r / 2 - 1) * sympy.exp(-x / 2)
 
-    a2 = scipy.integrate.quad(integrand, S, numpy.inf, args = (r))
-    a2 = a2[0] / 2 ** (r / 2) * math.gamma(int(r / 2))
+    star = scipy.integrate.quad(integrand, S, numpy.inf, args = (r))
+    star = star[0] / 2 ** (r / 2) * math.gamma(int(r / 2))
 
     hit_a2 = a2 > alpha
 
