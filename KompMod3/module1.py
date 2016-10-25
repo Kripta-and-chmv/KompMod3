@@ -1,353 +1,275 @@
-import sympy as sp
-import math 
-import matplotlib.pyplot as plt
+from IPython.display import display
+import copy
+import scipy
+import sympy
+import scipy.stats
+import numpy
+import mpmath
 import random
-
-#считывание входных параметров
-def Input(filename):
-    f = open(filename, 'r')
-    for line in f:
-        data = line.split(' ')
-    f.close()
-    return data
-#моделируем последовательность псевдослучайных чисел   
-def GeneratorRav(N):
-    y =[]
-    for k in range(N):
-       #генерация сл чисел в промежутке от 0 до 1
-        y.append(random.uniform(0,1))
-    return y   
-#моделируем дискретные числа стандартным алгоритмом
-def ModelDiscreteValuesStandart(table):
-    result = []
-    Oiter= 0
-    for i in range (len(table[2])):
-        k = table[2][i] #идем по массиву псевдослучайных чисел   
-        Oiter += 1        
-        for j in range(len(table[0])):
-            k = k - table[0][j] #идем по массиву чисел
-                                    #пуассоновского распределения
-            Oiter += 2        
-            
-            if k<0:
-                break
-        result.append(j)
-        Oiter += 1              
-    print('IterModel: ', Oiter)
-    return result 
-#моделируем дискретные числа нестандартным алгоритмом
-def ModelDiscreteValuesUnStandart(table, lymbda):
-    result = []
-    P = table[0]
-    L = table[2] #массив псевдослучайных чисел
-    Q = table[1][lymbda]
-    Oiter = 0  #для подсчета кол-ва итераций     
-       
-    for i in range(len(L)):
-        
-        k = L[i] - Q #сраниваем со значением при заданном lymbda
-        Oiter += 2        
-               
-        if k < 0: #если меньше, то увеличиваем до тех пор, 
-                    #пока значение не станет положительным
-            cur = lymbda
-            Oiter += 2        
-       
-            while k < 0:
-                k = k + P[cur]
-                cur -= 1
-                Oiter += 3        
-       
-            result.append(cur+1) 
-            Oiter += 1        
-       
-        else: #иначе уменьшаем до тех пор, пока значение не станет отрицательным  
-            cur = lymbda + 1
-            Oiter += 1        
-       
-            while k > 0:
-                k = k - P[cur]
-                cur += 1
-                Oiter += 3      
-       
-            result.append(cur-1) 
-            Oiter += 1        
-    print('IterModel: ', Oiter)
-    return result
-#вычисления вероятности по распределению Пуассона
-def Poisson(k, lymbda):
-    f = ((lymbda**k)/math.factorial(k))*math.exp(-lymbda)
-    return f
-#обрабатываем массив полученных вероятности пуассона,те значения где вероятности меньше е складываем в один интервал
-def ProcessP(arrayP, e):
-    
-    l = 0
-    p = 0
-    newP = []
-    
-    for i in range(len(arrayP)-1):
-        if(arrayP[i+1] > arrayP[i] and arrayP[i] < e):
-            l +=1 
-        if(arrayP[i+1] < arrayP[i] and arrayP[i] < e):
-            p = i
-            break
-    if l!=0:
-        newP.append(sum(arrayP[0:l]))
-    for i in range(p-l+1):
-        newP.append(arrayP[i+l])
-    newP.append(1 - sum(newP))
-    return newP
-#пуассоновкое распределение, создание таблицы
-def CreateTable(Size, lymbda):
-    result = []    
-    p = []
-    p_sum = []
-    seq = []
-    Oiter = 0
-    #генерируем последовательность чисел, принадлежащих пуассоновскому распр.
-    for k in range(Size):   
-        p.append(Poisson(k, lymbda))
-        Oiter += 1+k+3
-        
-    p = ProcessP(p, 1.0/Size)
-    #генерируем последовательность чисел, накопления вероятности 
-    p_sum.append(p[0])    
-    for k in range(len(p)-1):
-        p_sum.append(p_sum[k]+p[k+1])
-        Oiter+=2
-    #генерируем случайноую выборку
-    seq = GeneratorRav(Size)
-    Oiter += Size
-    
-    result.append(p)
-    result.append(p_sum)
-    result.append(seq)
-    print('iterTable: ', Oiter)
-    return result   
-#вывод полученных последовательностей
-def OutPutSequence(fileName, seq, text):
-    f = open(fileName, 'a')
-    k = 0
-    f.write(text+'\n')
-    for i in range(len(seq)):
-        f.write(str(seq[i]))
-        f.write(' ')
-        k+=1
-        if (k == 25):
-            k = 0
-            f.write('\n')        
-    f.close()   
-    return
-#очистка файла
-def ClearFile(fileName):
-    f = open(fileName, 'w')
-    f.close()   
-    return
-# вывод таблицы
-def outPutTable(fileName, table):
-    f = open(fileName, 'w')
-    f.write('k:\t')
-    k = 0
-    for i in range(len(table[2])):
-        k += 1
-        f.write('|'+str(k)+'\t')
-    f.write('\n')
-    for i in (table[2]):
-        f.write('---------')
-    f.write('\nPi:\t')
-    for i in range(len(table[0])):
-        f.write('|')
-        f.write(str(round(table[0][i],4)))
-        f.write('\t')
-    f.write('\n') 
-    for i in range(len(table[2])):
-        f.write('---------')
-    f.write('\nS(Pi):\t')  
-    for i in range(len(table[1])):
-        f.write('|')
-        f.write(str(round(table[1][i],4)))
-        f.write('\t')
-    f.write('\n') 
-    for i in (table[2]):
-        f.write('---------')
-    f.write('\nx:\t')    
-    for i in range(len(table[2])):
-        f.write('|'+str(round(table[2][i],4))+'\t')
-    f.write('\n') 
-    for i in range(len(table[2])):
-        f.write('---------')
-    f.write('\ne:\t')    
-    for i in range(len(table[3])):
-        f.write('|'+str(round(table[3][i],4))+'\t')
-    
-    f.close()
-    return
-def outPut(fileName, string):
-    f = open(fileName, 'w')
-    f.write(string)
-    f.close()
-    return
-def outPutInEnd(nameFile, string):
-    f = open(nameFile, 'a')
-    f.write(string)
-    f.close()
-    return
-#разбитие на интервалы
-def SelectIntervals(P, k):
-    mas = [] 
-    for i in range(k+1):
-        mas.append(int(P/k*i))
-    return mas
-import numpy as np
-#рисуем гистограммы эмпирической и теоретической частоты
-def DrawHistogram(masX, masY, nX, nY):
-    fig = plt.figure()
-    ax = fig.add_subplot(111)   # добавление области рисования ax
-    ax.bar(nX, nY, label = u'Theoretical')    
-    #Эмпирическая гистограмма
-    rgb = np.array([10,200,0])/255
-    plt.bar(masX, masY, color = rgb, alpha=0.5, label = u'Emperical')
-    plt.title('Criterion hi^2')
-    ax.grid(True)   # линии вспомогательной сетки 
-    ax.legend(loc = 'best', frameon = True)
-    plt.show()
-    return
-#проверка хи2
-def hi2(Period, alpha, table, fileName):
-    mas = table[3]    
-    P = table[0]
-    fe = []
-    #кол-во интервалов
-    K = len(P)
-    intervals=SelectIntervals(len(P), len(P))
-    #наблюдаемая частота    
-    f0=[]       
-      
-    for i in range(int(K)):
-        f0.append(0)
-        
-    #сколько значений попадает в интервал
-    for i in range(len(mas)):
-        for j in range(int(K)):
-            if mas[i] <= intervals[j+1]:                 
-                f0[j] += 1
-                break
-   
-       
-    #перемножим N*Pi
-    for i in range(len(P)):
-        fe.append(P[i])
-        f0[i] /= Period 
-
-    
-    #расчет хи2 критерия согласия для распределения Пуассона
-    S = 0
-    for i in range(len(fe)):
-        S += math.pow((f0[i]-fe[i]),2)/fe[i]
-
-     
-    intervals = intervals[0:int(K)]       
-    DrawHistogram(intervals, f0, intervals, fe)
-
-    outPut(fileName, "S*: "+str(S)+'\n')
-    
-    #количество степеней свободы
-    r = 5
-        
-    znam = math.gamma(r/2) * 2**(r/2)
-    
-    f = sp.Function('f')
-    g = sp.Function('g')
-    x = sp.Symbol('x')
-    
-    f = x **(r/2 - 1)* sp.exp(-x/2)
-    g = sp.integrate(f, (x, S, sp.oo))
-    P = g.evalf() / znam
-
-    outPutInEnd(fileName, "S: "+str(P)+'\n')
-    
-    if(abs(S) < abs(P)):
-        outPutInEnd(fileName, "Гипотеза принимается")
-    else:
-        outPutInEnd(fileName, "Гипотеза отвергается")
+import matplotlib.pyplot as plt
+from collections import Counter
  
-    return 
-#main
-#получаем необходимые параметры
-data = Input('data.txt')
-N1 = int(data[0])
-N2 = int(data[1])
-l2 = int(data[2])
-l4 = int(data[3])
-l6 = int(data[4])
-l12 =int(data[5])
-alpha = float(data[6])
-
-#исследование для стандартного алгоритма
-#моделирование дискретных величин с помощью poisson(2)    
-ClearFile("Lyambda2.txt")
-
-print(1)
-table1 = CreateTable(N1, l2)
-table1.append(ModelDiscreteValuesStandart(table1))  
-outPutTable('1Table40.txt', table1)
-OutPutSequence("Lyambda2.txt", table1[3], 'Смоделированные дискретные величины, при л = 2'+'\n'+'Размерность 40: ')
-hi2(N1, alpha, table1, 'hi1.txt')
-
-print(2)
-table2 = CreateTable(N2, l2)
-table2.append(ModelDiscreteValuesStandart(table2))  
-outPutTable('1Table100.txt', table2)
-OutPutSequence("Lyambda2.txt", table2[3], '\n'+'Размерность 100: ')
-hi2(N2, alpha, table2, 'hi2.txt')
-
-#моделирование дискретных величин с помощью poisson(6)   
-ClearFile("Lyambda6.txt")
-
-print(3)
-table12 = CreateTable(N1, l6)
-table12.append(ModelDiscreteValuesStandart(table12))  
-outPutTable('2Table40.txt', table12)
-OutPutSequence("Lyambda6.txt", table12[3], 'Смоделированные дискретные величины, при л = 6'+'\n'+'Размерность 40: ')
-hi2(N1, alpha, table12, 'hi3.txt')
-
-print(4)
-table22 = CreateTable(N2, l6)
-table22.append(ModelDiscreteValuesStandart(table22))  
-outPutTable('2Table100.txt', table22)
-OutPutSequence("Lyambda6.txt", table22[3], '\n'+'Размерность 100: ')
-hi2(N2, alpha, table22, 'hi4.txt')
-
-#моделирование дискретных величин с помощью poisson(12)     
-ClearFile("Lyambda12.txt")
-
-print(5)
-table13 = CreateTable(N1, l12)
-table13.append(ModelDiscreteValuesStandart(table13))  
-outPutTable('3Table40.txt', table13)
-OutPutSequence("Lyambda12.txt", table13[3], 'Смоделированные дискретные величины, при л = 12'+'\n'+'Размерность 40: ')
-hi2(N1, alpha, table13, 'hi5.txt')
-
-print(6)
-table23 = CreateTable(N2, l12)
-table23.append(ModelDiscreteValuesStandart(table23))  
-outPutTable('3Table100.txt', table23)
-OutPutSequence("Lyambda12.txt", table23[3], '\n'+'Размерность 100: ')
-hi2(N2, alpha, table23, 'hi6.txt')
-
-#исследование для нестандартного алгоритма
-print(7)
-ClearFile("Lyambda4.txt")
-table41 = CreateTable(N1, l4)
-table41.append(ModelDiscreteValuesUnStandart(table41,l4))  
-outPutTable('4Table40.txt', table41)
-OutPutSequence("Lyambda4.txt", table41[3], 'Смоделированные дискретные величины, при л = 4'+'\n'+'Размерность 40: ')
-hi2(N1, alpha, table41, 'hi7.txt')
-
-print(8)
-table24 = CreateTable(N2, l4)
-table24.append(ModelDiscreteValuesUnStandart(table24,l4))  
-outPutTable('4Table100.txt', table24)
-OutPutSequence("Lyambda4.txt", table24[3], '\n'+'Размерность 100: ')
-hi2(N2, alpha, table24, 'hi8.txt')
-
+ 
+def get_prng(seed, a, c, modulus, N=1000):
+    x = seed
+    for i in range(0, N):
+        x = (a * x ** 2 + c) % modulus
+        yield x
+ 
+ 
+def find_period(sequence):
+    """c = Counter()
+   for a in reversed(sequence):
+       oldsz = len(c)
+       c += Counter([a])
+       if oldsz == len(c):
+           return oldsz
+   Находит период у числовой последовательности.
+       Аргументы: sequence - последовательность.
+       Вывод: period - длина периода.
+ 
+       """
+    # период определяетя с конца последовательности
+    # берётся последовательность из 3ех элементов и ищется первое её повторение
+    length = len(sequence)
+    a = list(reversed(sequence[length - 3: length]))
+    for i in range(length - 4, -1, -1):
+        if (a[0] == sequence[i]):
+            if (i - 2 > -1):
+                if (a[1] == sequence[i - 1] and a[2] == sequence[i - 2]):
+                    # добавляем единицу,
+                    # т.к. i указывает на начало второго периода
+                    i += 1
+                    # а должен на конец первого
+                    break
+ 
+    period = length - i
+    return period
+ 
+ 
+def test1(sequence, alpha):
+    def count_q(sequence):
+        """Считаем количество перестановок
+           [2,1] -> 1
+       """
+        return [j < i for i, j in zip(sequence[:-1], sequence[1:])].count(True)
+ 
+    U = scipy.stats.norm.ppf(1 - alpha / 2.0)
+    delta = U * mpmath.sqrt(len(sequence)) / 2.0
+ 
+    q = count_q(sequence)
+    print("Доверительный интервал: [%.3f,%.3f], количество перестановок: %.3f" % (
+    len(sequence) / 2 - delta, len(sequence) / 2 + delta, q))
+    return numpy.abs(len(sequence) / 2 - q) <= delta
+ 
+ 
+def test2(sequence, modulus, alpha, K, add_graph=True):
+    n = len(sequence)
+    intervals = numpy.resize(range(modulus), (K, int(modulus / K)))
+    counts = [sum([list(interval).count(x) for x in sequence]) for interval in intervals]
+    frequency = [c / len(sequence) for c in counts]
+    print("Частоты: ", frequency)
+    width = intervals[-1, -1] / n
+ 
+    if add_graph:
+        plt.bar(numpy.arange(0, modulus, modulus / K), frequency, width)
+        plt.title('Frecuency Histogram')
+        plt.xlabel('intervals')
+        plt.ylabel('relative frequency')
+        plt.xticks(numpy.arange(0, modulus, modulus / K))
+        plt.show()
+    seq_ = sequence
+    sequence = numpy.array(sequence)
+    mean = sequence.mean()
+ 
+    U = scipy.stats.norm.ppf(1 - alpha / 2.0)
+    delta_nu = U / K * mpmath.sqrt((K - 1) / n)
+    print("Доверительные интервалы для частот: ")
+    nu_test_result = [numpy.abs(nu - 1 / K) <= delta_nu for nu in frequency].count(False) == 0
+    for nu in frequency:
+        print("[%.3f,%.3f]" % (nu - delta_nu, nu + delta_nu))
+ 
+    print("Матожидание: %.3f" % mean)
+    variance = sequence.var()
+    delta_mean = U * mpmath.sqrt(variance / n)
+    print("Доверительный интервал для среднего: [%.3f,%.3f]" % (mean - delta_mean, mean + delta_mean))
+    mean_test_result = numpy.abs(mean - modulus / 2) <= delta_mean
+ 
+    print("Дисперсия: %.3f" % variance)
+    delta_var = (n - 1) * variance
+    chi2_1 = scipy.stats.chi2.ppf(1 - alpha / 2.0, n - 1)
+    chi2_2 = scipy.stats.chi2.ppf(alpha / 2.0, n - 1)
+    var_test_result = delta_var / chi2_1 <= modulus ** 2 / 12 <= delta_var / chi2_2
+    print("Доверительный интервал для дисперсии: [%.3f,%.3f]" % (delta_var / chi2_1, delta_var / chi2_2))
+ 
+    sequence = seq_
+ 
+    return nu_test_result and mean_test_result and var_test_result
+ 
+ 
+def test3(seq, mod, alpha, r, K, add_graph=True):
+    t = int((len(seq) - 1) / r)
+ 
+    sub_seqs = numpy.resize(seq, (t, r)).transpose()
+ 
+    is_test1 = True
+    is_test2 = True
+ 
+    for sub_seq in sub_seqs:
+        is_test1 = is_test1 if test1(sub_seq, alpha) else False
+        is_test2 = is_test2 if test2(sub_seq, mod, alpha, K, add_graph) else False
+ 
+    return is_test1 and is_test2
+ 
+ 
+# In[49]:
+ 
+def chisqr_test(sequence, mod, alpha, K, draw_graph=True):
+    n = len(sequence)
+    print("Тест Хи-квадрат")
+    intervals = numpy.resize(range(mod), (K, int(mod / K)))
+    hits_amount = [sum([list(interval).count(x) for x in sequence]) for interval in intervals]
+    frequency = [c / len(sequence) for c in hits_amount]
+ 
+    probabil = [len(intervals[0]) / mod] * len(intervals)
+    print("len(probabil): ", len(probabil))
+    if (draw_graph is True):
+        width = intervals[-1, -1] / n
+        plt.bar(numpy.arange(0, mod, mod / K), frequency, width)
+        plt.title('Chi2 Histogram')
+        plt.xlabel('intervals')
+        plt.ylabel('hits amount')
+        plt.xticks(numpy.arange(0, mod, mod / K))
+        plt.show()
+ 
+    Ssum = 0
+    for i in range(K):
+        Ssum += (hits_amount[i] / len(sequence) -
+                 probabil[i]) ** 2 / probabil[i]
+    S = len(sequence) * Ssum
+    print("Статистика: %.3f" % S)
+    r = K - 1
+    print("Степеней свободы: ", r)
+ 
+    def integrand(x, r):
+        return x ** (r / 2 - 1) * sympy.exp(-x / 2)
+ 
+    a2 = scipy.integrate.quad(integrand, S, numpy.inf, args=(r))
+    a2 = a2[0] / (2 ** (r / 2) * mpmath.gamma(r / 2))
+    print("P(S > S*): %.3f" % a2)
+ 
+    hit_a2 = a2 > 1 - alpha
+ 
+    S_crit = scipy.stats.chi2.ppf(1 - alpha, r)  # 18.307-
+    print("Критическое значение: %.3f" % S_crit)
+    hit = S <= S_crit
+ 
+    return hit and hit_a2
+ 
+ 
+# In[50]:
+ 
+def anderson_test(sequence, mod):
+    print("Тест андерсона")
+ 
+    def udf(x, a, b):
+        """Значение функции равномерного распределения"""
+        return 0 if x < a else (x - a) / (b - a) if x < b else 1
+ 
+    ssequence = sorted(copy.copy(sequence))
+ 
+    Ssum = 0
+    length = len(sequence)
+ 
+    for i in range(1, length + 1):
+        F = udf(ssequence[i - 1], 0, mod)
+        Ssum += (2 * i - 1) * mpmath.log(F) / (2 * length)
+        Ssum += (1 - (2 * i - 1) / (2 * length)) * mpmath.log(1 - F)
+ 
+    S = -length - 2 * Ssum
+    print("Статистика: %.3f" % S)
+    critical_value = 2.4924  # alpha 0.05
+    print("Критическое значение: %.3f" % critical_value)
+ 
+    hit = S <= critical_value
+ 
+    def integrand(x, S, j):
+        return sympy.exp(S / (8 * (x ** 2 + 1)) - ((4 * j + 1) * mpmath.pi * x) ** 2 / (8 * S))
+ 
+    def calculate_a2(S):
+        j = 0
+        return (mpmath.sqrt(2 * mpmath.pi) / S) * \
+               scipy.sum((-1) ** j * (mpmath.gamma(j + 0.5) * (4 * j + 1)) / \
+                         (mpmath.gamma(0.5) * mpmath.gamma(j + 1)) * \
+                         sympy.exp(-((4 * j + 1) ** 2 * mpmath.pi ** 2) / (8 * S)) * \
+                         scipy.integrate.quad(integrand, 0, numpy.inf, args=(S, j))[0], j)
+ 
+    a2 = 1 - calculate_a2(S)
+    print("P(S > S*): %.3f" % a2)
+    a2_hit = a2 > 0.05
+ 
+    return hit and a2_hit
+ 
+ 
+# In[53]:
+ 
+def generate_good_seq():
+    count_ = 0
+    maxP = 0
+    while True:
+        a = random.randrange(1, 1000)
+        c = random.randrange(1, 1000)
+        modulus = random.randrange(1, 1000)
+        seed = random.randrange(1, 1000)
+        count_ += 1
+        prng = get_prng(seed, a, c, modulus)
+        seq = [i for i in prng]
+        P = find_period(seq)
+        maxP = P if P > maxP else maxP
+        if P >= 100:
+            print("a = ", a)
+            print("c = ", c)
+            print("modulus = ", modulus)
+            print("seed = ", seed)
+            return (a, c, modulus, seed)
+        if (count_ % 10000 == 0): print(maxP)
+ 
+ 
+def test_seq(seq, mod, K2, K3, r3):
+    print("Последовательность: ", seq)
+    seq40 = seq[-40:]
+    seq100 = seq[-100:]
+    P = find_period(seq)
+    print("Период: ", P)
+    test1_40 = test1(seq40, 0.05)
+    print("Тест 1 40: ", test1_40)
+    test1_100 = test1(seq100, 0.05)
+    print("Тест 1 100: ", test1_100)
+    test2_40 = test2(seq40, mod, 0.05, K2, False)
+    print("Тест 2 40: ", test2_40)
+    test2_100 = test2(seq100, mod, 0.05, K2, False)
+    print("Тест 2 100: ", test2_100)
+    test3_40 = test3(seq40, mod, 0.05, r3, K3, False)
+    print("Тест 3 40: ", test3_40)
+    test3_100 = test3(seq100, mod, 0.05, r3, K3, False)
+    print("Тест 3 100: ", test3_100)
+    chisqr = chisqr_test(seq[-P:], mod, 0.05, int(5 * mpmath.log10(P)), False)
+    print("Тест Хи-квадрат: ", chisqr)
+    anderson = anderson_test(seq[-P:], mod)
+    print("Тест Андерсон: ", anderson)
+    succ = test1_40 and test1_100 and test2_40 and test2_100 and test3_40 and test3_100 and anderson and chisqr
+    print("Последовательность подчиняется равномерному распределению(95%): ", succ)
+ 
+ 
+def main():
+    # a,c,mod,seed=generate_good_seq()
+    # a,c,mod,seed=257,510,841,147 #False
+    a, c, mod, seed = 307, 211, 486, 763  # True
+    seq = [i for i in get_prng(seed, a, c, mod)]
+    test_seq(seq, mod, 16, 10, 4)
+ 
+    seq = numpy.random.uniform(0, mod, 1000)
+    test_seq(seq, mod, 16, 10, 4)
+ 
+ 
+main()

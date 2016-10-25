@@ -1,3 +1,7 @@
+import numpy
+import scipy
+import math
+
 def chisqr_test(sequence, mod, alpha, intervals_amount, drawing_graph, wfile):
     """Тест Хи-квадрат.
     Аргументы:
@@ -29,6 +33,29 @@ def chisqr_test(sequence, mod, alpha, intervals_amount, drawing_graph, wfile):
             last_point += inter_length
         intervals.append(mod)
         return intervals
+    K = intervals_amount
+    lngth = mod/K
+
+    intervals = [x * lngth for x in range(0, K+1)]
+
+    hits_amount = numpy.zeros(K)
+    
+    for a in sequence:
+        for j in range(K):
+            if (intervals[j] <= a < intervals[j + 1]):
+                hits_amount[j] += 1
+                break
+
+    [j < i for i, j in zip(intervals[:-1], intervals[1:])].count(True)
+
+    count = 0
+    for i in range(len(intervals) - 2):
+        if intervals[i] < intervals[i+1]:
+            count+=1
+
+
+    frequency = [c / len(sequence) for c in hits_amount]
+    k = 0
 
     def calculate_hits_amount(intervals, sequence):
         """Вычисляется количество элементов выборки, попавших в каждый интервал.
@@ -39,7 +66,7 @@ def chisqr_test(sequence, mod, alpha, intervals_amount, drawing_graph, wfile):
             frequency - список количества попаданий для каждого интервала, list of int.
 
         """
-        frequency = numpy.zeros(len(intervals) - 1)
+        hits_amount = numpy.zeros(len(intervals) - 1)
         length = len(sequence)
         for i in range(length):
             for j in range(len(intervals) - 1):

@@ -31,7 +31,7 @@
     <Compile Include="module1.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="puasson.py" />
+    <Compile Include="poisson.py" />
     <Compile Include="standart_algorithm_with_rec.py">
       <SubType>Code</SubType>
     </Compile>

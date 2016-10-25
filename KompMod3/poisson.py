@@ -5,9 +5,6 @@ import scipy
 import scipy.stats as st
 
 
-def CalculateProbabil(lamb, k):
-    return lamb**k / fact(k) * exp(-lamb)
-
 def Puasson(length, lamb):    
     
     seq = [x for x in range(length)]
