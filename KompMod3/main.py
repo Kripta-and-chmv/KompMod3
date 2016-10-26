@@ -27,10 +27,11 @@ arr401.sort()
 arr402 = [poisson.Puasson(40, 20) for x in range(40)]
 arr402.sort()
 
-binom_probs = [scipy.stats.nbinom.pmf(arr401[i], s, p) for i in range (40)]
+
+binom_probs = [scipy.stats.nbinom.pmf(a, s, p) for a in arr401]
 sm = sum(binom_probs)
 
-chi2.chisqr_test(arr401, max(arr401), 0.05,  20, False, False)
+chi2.chisqr_test(arr402, 0.05, 20, False, False)
 
 arr100 = [std_alg.Diskret_Number(s, p) for x in range(100)]
 

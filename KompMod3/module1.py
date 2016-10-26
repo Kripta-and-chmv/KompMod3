@@ -24,23 +24,23 @@ def find_period(sequence):
        c += Counter([a])
        if oldsz == len(c):
            return oldsz
-   Находит период у числовой последовательности.
-       Аргументы: sequence - последовательность.
-       Вывод: period - длина периода.
+       .
+       : sequence - .
+       : period -  .
  
        """
-    # период определяетя с конца последовательности
-    # берётся последовательность из 3ех элементов и ищется первое её повторение
+    #     
+    #    3      
     length = len(sequence)
     a = list(reversed(sequence[length - 3: length]))
     for i in range(length - 4, -1, -1):
         if (a[0] == sequence[i]):
             if (i - 2 > -1):
                 if (a[1] == sequence[i - 1] and a[2] == sequence[i - 2]):
-                    # добавляем единицу,
-                    # т.к. i указывает на начало второго периода
+                    #  ,
+                    # .. i     
                     i += 1
-                    # а должен на конец первого
+                    #     
                     break
  
     period = length - i
@@ -49,7 +49,7 @@ def find_period(sequence):
  
 def test1(sequence, alpha):
     def count_q(sequence):
-        """Считаем количество перестановок
+        """  
            [2,1] -> 1
        """
         return [j < i for i, j in zip(sequence[:-1], sequence[1:])].count(True)
@@ -58,7 +58,7 @@ def test1(sequence, alpha):
     delta = U * mpmath.sqrt(len(sequence)) / 2.0
  
     q = count_q(sequence)
-    print("Доверительный интервал: [%.3f,%.3f], количество перестановок: %.3f" % (
+    print(" : [%.3f,%.3f],  : %.3f" % (
     len(sequence) / 2 - delta, len(sequence) / 2 + delta, q))
     return numpy.abs(len(sequence) / 2 - q) <= delta
  
@@ -68,7 +68,7 @@ def test2(sequence, modulus, alpha, K, add_graph=True):
     intervals = numpy.resize(range(modulus), (K, int(modulus / K)))
     counts = [sum([list(interval).count(x) for x in sequence]) for interval in intervals]
     frequency = [c / len(sequence) for c in counts]
-    print("Частоты: ", frequency)
+    print(": ", frequency)
     width = intervals[-1, -1] / n
  
     if add_graph:
@@ -84,23 +84,23 @@ def test2(sequence, modulus, alpha, K, add_graph=True):
  
     U = scipy.stats.norm.ppf(1 - alpha / 2.0)
     delta_nu = U / K * mpmath.sqrt((K - 1) / n)
-    print("Доверительные интервалы для частот: ")
+    print("   : ")
     nu_test_result = [numpy.abs(nu - 1 / K) <= delta_nu for nu in frequency].count(False) == 0
     for nu in frequency:
         print("[%.3f,%.3f]" % (nu - delta_nu, nu + delta_nu))
  
-    print("Матожидание: %.3f" % mean)
+    print(": %.3f" % mean)
     variance = sequence.var()
     delta_mean = U * mpmath.sqrt(variance / n)
-    print("Доверительный интервал для среднего: [%.3f,%.3f]" % (mean - delta_mean, mean + delta_mean))
+    print("   : [%.3f,%.3f]" % (mean - delta_mean, mean + delta_mean))
     mean_test_result = numpy.abs(mean - modulus / 2) <= delta_mean
  
-    print("Дисперсия: %.3f" % variance)
+    print(": %.3f" % variance)
     delta_var = (n - 1) * variance
     chi2_1 = scipy.stats.chi2.ppf(1 - alpha / 2.0, n - 1)
     chi2_2 = scipy.stats.chi2.ppf(alpha / 2.0, n - 1)
     var_test_result = delta_var / chi2_1 <= modulus ** 2 / 12 <= delta_var / chi2_2
-    print("Доверительный интервал для дисперсии: [%.3f,%.3f]" % (delta_var / chi2_1, delta_var / chi2_2))
+    print("   : [%.3f,%.3f]" % (delta_var / chi2_1, delta_var / chi2_2))
  
     sequence = seq_
  
@@ -126,7 +126,7 @@ def test3(seq, mod, alpha, r, K, add_graph=True):
  
 def chisqr_test(sequence, mod, alpha, K, draw_graph=True):
     n = len(sequence)
-    print("Тест Хи-квадрат")
+    print(" -")
     intervals = numpy.resize(range(mod), (K, int(mod / K)))
     hits_amount = [sum([list(interval).count(x) for x in sequence]) for interval in intervals]
     frequency = [c / len(sequence) for c in hits_amount]
@@ -147,9 +147,9 @@ def chisqr_test(sequence, mod, alpha, K, draw_graph=True):
         Ssum += (hits_amount[i] / len(sequence) -
                  probabil[i]) ** 2 / probabil[i]
     S = len(sequence) * Ssum
-    print("Статистика: %.3f" % S)
+    print(": %.3f" % S)
     r = K - 1
-    print("Степеней свободы: ", r)
+    print(" : ", r)
  
     def integrand(x, r):
         return x ** (r / 2 - 1) * sympy.exp(-x / 2)
@@ -161,7 +161,7 @@ def chisqr_test(sequence, mod, alpha, K, draw_graph=True):
     hit_a2 = a2 > 1 - alpha
  
     S_crit = scipy.stats.chi2.ppf(1 - alpha, r)  # 18.307-
-    print("Критическое значение: %.3f" % S_crit)
+    print(" : %.3f" % S_crit)
     hit = S <= S_crit
  
     return hit and hit_a2
@@ -170,10 +170,10 @@ def chisqr_test(sequence, mod, alpha, K, draw_graph=True):
 # In[50]:
  
 def anderson_test(sequence, mod):
-    print("Тест андерсона")
+    print(" ")
  
     def udf(x, a, b):
-        """Значение функции равномерного распределения"""
+        """   """
         return 0 if x < a else (x - a) / (b - a) if x < b else 1
  
     ssequence = sorted(copy.copy(sequence))
@@ -187,9 +187,9 @@ def anderson_test(sequence, mod):
         Ssum += (1 - (2 * i - 1) / (2 * length)) * mpmath.log(1 - F)
  
     S = -length - 2 * Ssum
-    print("Статистика: %.3f" % S)
+    print(": %.3f" % S)
     critical_value = 2.4924  # alpha 0.05
-    print("Критическое значение: %.3f" % critical_value)
+    print(" : %.3f" % critical_value)
  
     hit = S <= critical_value
  
@@ -236,29 +236,29 @@ def generate_good_seq():
  
  
 def test_seq(seq, mod, K2, K3, r3):
-    print("Последовательность: ", seq)
+    print(": ", seq)
     seq40 = seq[-40:]
     seq100 = seq[-100:]
     P = find_period(seq)
-    print("Период: ", P)
+    print(": ", P)
     test1_40 = test1(seq40, 0.05)
-    print("Тест 1 40: ", test1_40)
+    print(" 1 40: ", test1_40)
     test1_100 = test1(seq100, 0.05)
-    print("Тест 1 100: ", test1_100)
+    print(" 1 100: ", test1_100)
     test2_40 = test2(seq40, mod, 0.05, K2, False)
-    print("Тест 2 40: ", test2_40)
+    print(" 2 40: ", test2_40)
     test2_100 = test2(seq100, mod, 0.05, K2, False)
-    print("Тест 2 100: ", test2_100)
+    print(" 2 100: ", test2_100)
     test3_40 = test3(seq40, mod, 0.05, r3, K3, False)
-    print("Тест 3 40: ", test3_40)
+    print(" 3 40: ", test3_40)
     test3_100 = test3(seq100, mod, 0.05, r3, K3, False)
-    print("Тест 3 100: ", test3_100)
+    print(" 3 100: ", test3_100)
     chisqr = chisqr_test(seq[-P:], mod, 0.05, int(5 * mpmath.log10(P)), False)
-    print("Тест Хи-квадрат: ", chisqr)
+    print(" -: ", chisqr)
     anderson = anderson_test(seq[-P:], mod)
-    print("Тест Андерсон: ", anderson)
+    print(" : ", anderson)
     succ = test1_40 and test1_100 and test2_40 and test2_100 and test3_40 and test3_100 and anderson and chisqr
-    print("Последовательность подчиняется равномерному распределению(95%): ", succ)
+    print("   (95%): ", succ)
  
  
 def main():

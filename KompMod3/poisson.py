@@ -9,7 +9,8 @@ def Puasson(length, lamb):
     
     seq = [x for x in range(length)]
 
-    p_pois = [st.poisson.pmf(seq[i], lamb) for i in range(length)]
+    p_pois = [st.poisson.pmf(el, lamb) for el in seq]
+
     Q = sum(p_pois[:lamb + 1])
 
     number = 0
