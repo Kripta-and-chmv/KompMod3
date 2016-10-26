@@ -5,8 +5,13 @@ import scipy.stats as st
 import math
 import collections
 
-def chisqr_test(sequence, alpha, lambd, drawing_graph, wfile):
-    
+def chisqr_test(sequence, probs, alpha, drawing_graph, wfile):
+    """Тест хи квадрат.
+    Аргументы:
+        sequence - выборка;
+        probs - соответствия элемента и его вероятности, словарь;
+        alpha - уровень значимости;
+        """
     def draw_histogram(frequency, intervals):
         """Рисует гистограмму частот.
         Аргументы:
@@ -25,11 +30,8 @@ def chisqr_test(sequence, alpha, lambd, drawing_graph, wfile):
         plt.show()
 
     hits_amount = collections.Counter()
-    probs = {}
     for i in sequence:
         hits_amount[i] += 1
-        probs[i] = st.poisson.pmf(i, lambd)
-
             
     if drawing_graph is True:
         draw_histogram(hits_amount, intervals)
@@ -55,7 +57,5 @@ def chisqr_test(sequence, alpha, lambd, drawing_graph, wfile):
     S_crit = scipy.stats.chi2.ppf(1 - 0.05, r)
 
     hit = S <= S_crit
-
-    writing_in_file(wfile, len(sequence), S, S_crit, hit, a2, hit_a2, intervals_amount)
 
     return hit and hit_a2
