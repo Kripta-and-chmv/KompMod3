@@ -4,29 +4,35 @@ import chi2
 import scipy
 import scipy.stats
 
-s = 4
-p = 0.1
-lambd = 20
+def tests_for_binom_neg(s, p, alpha):
+    arr_binom_neg40 = [std_alg.diskret_number(s, p) for x in range(40)]
 
-binom_probs = [binom_negative(s, p, i) for i in range (100)]
+    binom_neg_prob = {}
+    for el in arr_binom_neg40:    
+        binom_neg_prob[el] = std_alg.distrib(el, s, p)
 
-i = 0
-while binom_probs[i] < 0.001:
-    i += 1
-intervals_amount = len(binom_probs) - i
+    binom_neg_count = std_alg.calculate_interv_amount(arr_binom_neg40, s, p)    
 
+    return chi2.chisqr_test(arr_pois40, pois_prob, poisson_count, alpha, False, False)
 
-ksi = std_alg.Diskret_Number(s, p)
+def tests_for_poisson(lambd, alpha):
+    arr_pois40 = [poisson.nonstandart_alg(40, lambd) for x in range(40)]
 
-print(ksi)
+    pois_prob = {}
+    for el in arr_pois40:    
+        pois_prob[el] = poisson.distrib(el, lambd)
 
-a = std_alg.Diskret_Number(s, p)
+    poisson_count = poisson.calculate_interv_amount(arr_pois40, lambd)
 
-arr401 = [std_alg.Diskret_Number(s, p) for x in range(40)]
-arr402 = [poisson.Puasson(40, lambd) for x in range(40)]
+    return chi2.chisqr_test(arr_binom_neg40, binom_neg_prob, binom_neg_count, alpha, False, False)
 
-chi2.chisqr_test(arr402, 0.05, False, False)
+def main():    
+    s = 4
+    p = 0.1
+    alpha = 0.05
+    lambd = 20
 
-arr100 = [std_alg.Diskret_Number(s, p) for x in range(100)]
+    tests_for_binom_neg(s, p, neg)
+    tests_for_poisson(lambd, alpha)
 
-print (arr)
+main()

@@ -1,9 +1,25 @@
 import random
 from math import factorial as fact
 import scipy
-import scipy.stats
+import scipy.stats as st
 
-def Diskret_Number(s, p, oper=0):
+
+def calculate_interv_amount(sequence, s, p):
+    count = 0
+    for el in sequence:
+        if distrib(el, s, p) >= 0.001:
+            count += 1
+    return count
+
+def distrib(el, s, p):
+    """отрицательный биномаиальный закон распределения.
+    Аргументы:
+        el - вычисляется вроятность этого числа;
+        s, p - параметры
+    """
+    return st.nbinom.pmf(el, s, p)
+
+def diskret_number(s, p, oper=0):
     """Вычисление дискретного числа стандартным алкоритмом с рекуррентными формулами
     """
     def r(s, p, k, oper=0):
@@ -13,7 +29,7 @@ def Diskret_Number(s, p, oper=0):
     m = random.random()
     i = 0
 
-    P = scipy.stats.nbinom.pmf(0, s, p)
+    P = distrib(0, s, p)
 
     m -= P
     m_greater_than_zero = m > 0

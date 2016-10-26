@@ -5,7 +5,8 @@ import scipy.stats as st
 import math
 import collections
 
-def chisqr_test(sequence, probs, alpha, drawing_graph, wfile):
+
+def chisqr_test(sequence, probs, interv_amount, alpha, drawing_graph, wfile):
     """Тест хи квадрат.
     Аргументы:
         sequence - выборка;
@@ -38,8 +39,8 @@ def chisqr_test(sequence, probs, alpha, drawing_graph, wfile):
 
     len_seq = len(sequence)
     # вычисляется статистика
-
-    addition = sum([(hit / len_seq - prob)**2 / prob for hit, prob in zip(hits_amount.values(), probs.values())])
+    addition = [(hit / len_seq - prob)**2 / prob for hit, prob in zip(hits_amount.values(), probs.values())]
+    addition = sum(addition[:interv_amount])
 
     S = len_seq * addition
 

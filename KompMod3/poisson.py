@@ -4,12 +4,28 @@ from math import exp
 import scipy
 import scipy.stats as st
 
+def calculate_interv_amount(sequence, lambd):
+    count = 0
+    for el in sequence:
+        if distrib(el, lambd) >= 0.001:
+            count += 1
+    return count
 
-def Puasson(length, lamb):    
+def distrib(el, lambd):
+    """пуассоновский закон распределения.
+    Аргументы:
+        el - вычисляется вроятность этого числа;
+        lambd - параметры
+    """
+    return st.poisson.pmf(el, lambd)
+
+def nonstandart_alg(length, lamb):   
+    """Вычисление дискретного числа стандартным алкоритмом с рекуррентными формулами
+    """
     
     seq = [x for x in range(length)]
 
-    p_pois = [st.poisson.pmf(el, lamb) for el in seq]
+    p_pois = [distrib(el, lamb) for el in seq]
 
     Q = sum(p_pois[:lamb + 1])
 
