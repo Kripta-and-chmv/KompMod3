@@ -23,7 +23,6 @@ def diskret_number(s, p, oper=0):
     """Вычисление дискретного числа стандартным алкоритмом с рекуррентными формулами
     """
     def r(s, p, k, oper=0):
-        oper += 5
         return (s + k) * (1 - p) / (k + 1)
 
     m = random.random()
@@ -32,13 +31,10 @@ def diskret_number(s, p, oper=0):
     P = distrib(0, s, p)
 
     m -= P
-    m_greater_than_zero = m > 0
 
-    while m_greater_than_zero:
+    while m > 0:
         P *= r(s, p, i, oper)
         i += 1
         m -= P
-        m_greater_than_zero = m > 0
-        oper += 4
 
     return i
