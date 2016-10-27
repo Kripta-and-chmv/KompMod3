@@ -64,4 +64,4 @@ def chisqr_test(sequence, probs, interv_amount, alpha, drawing_graph):
 
     hit = S <= S_crit
 
-    return hit and hit_a2
+    return hit and hit_s_star
