@@ -19,32 +19,39 @@ def distrib(el, lambd):
     """
     return st.poisson.pmf(el, lambd)
 
-def nonstandart_alg(length, lamb):   
+def nonstandart_alg(p_pois, lamb):   
     """Вычисление дискретного числа стандартным алкоритмом с рекуррентными формулами
     """
     
-    seq = [x for x in range(length)]
-
-    p_pois = [distrib(el, lamb) for el in seq]
+    oper = 0
 
     Q = sum(p_pois[:lamb + 1])
+    oper += lamb
 
     number = 0
 
     p = random.random()
     p -= Q
 
+    oper += 2
+
     if p >= 0:
         k = lamb + 1
         while p >= 0:
             p -= p_pois[k]
             k += 1
-        number = k
+            oper += 3
+        number = k - 1
+        oper += 2
 
     else:
         k = lamb
         while p < 0:
             p += p_pois[k]
             k -= 1
-        number = k
-    return number
+            oper += 3
+        number = k + 1
+        oper += 1
+    oper += 1
+
+    return number, oper

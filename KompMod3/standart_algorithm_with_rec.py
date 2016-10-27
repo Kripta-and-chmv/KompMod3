@@ -19,22 +19,31 @@ def distrib(el, s, p):
     """
     return st.nbinom.pmf(el, s, p)
 
-def diskret_number(s, p, oper=0):
+def diskret_number(s, p):
     """Вычисление дискретного числа стандартным алкоритмом с рекуррентными формулами
     """
-    def r(s, p, k, oper=0):
+    def r(s, p, k):
         return (s + k) * (1 - p) / (k + 1)
+    
+    oper = 0
 
     m = random.random()
     i = 0
 
     P = distrib(0, s, p)
 
+    oper += 2 * s - 1
+
     m -= P
 
+    oper += 2
+
     while m > 0:
-        P *= r(s, p, i, oper)
+        P *= r(s, p, i)
         i += 1
         m -= P
+        oper += 9
 
-    return i
+    oper +=1
+
+    return i, oper
