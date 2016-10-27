@@ -13,7 +13,7 @@ def tests_for_binom_neg(s, p, alpha):
 
     binom_neg_count = std_alg.calculate_interv_amount(arr_binom_neg40, s, p)    
 
-    return chi2.chisqr_test(arr_pois40, pois_prob, poisson_count, alpha, False, False)
+    return chi2.chisqr_test(arr_binom_neg40, binom_neg_prob, binom_neg_count, alpha, True)
 
 def tests_for_poisson(lambd, alpha):
     arr_pois40 = [poisson.nonstandart_alg(40, lambd) for x in range(40)]
@@ -24,7 +24,7 @@ def tests_for_poisson(lambd, alpha):
 
     poisson_count = poisson.calculate_interv_amount(arr_pois40, lambd)
 
-    return chi2.chisqr_test(arr_binom_neg40, binom_neg_prob, binom_neg_count, alpha, False, False)
+    return chi2.chisqr_test(arr_pois40, pois_prob, poisson_count, alpha, True)
 
 def main():    
     s = 4
@@ -32,7 +32,7 @@ def main():
     alpha = 0.05
     lambd = 20
 
-    tests_for_binom_neg(s, p, neg)
+    tests_for_binom_neg(s, p, alpha)
     tests_for_poisson(lambd, alpha)
 
 main()

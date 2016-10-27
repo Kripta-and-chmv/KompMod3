@@ -4,26 +4,28 @@ import scipy
 import scipy.stats as st
 import math
 import collections
+import matplotlib.pyplot as plt
 
 
-def chisqr_test(sequence, probs, interv_amount, alpha, drawing_graph, wfile):
+def chisqr_test(sequence, probs, interv_amount, alpha, drawing_graph):
     """Тест хи квадрат.
     Аргументы:
         sequence - выборка;
         probs - соответствия элемента и его вероятности, словарь;
         alpha - уровень значимости;
         """
-    def draw_histogram(frequency, intervals):
+    def draw_histogram(h, length):
         """Рисует гистограмму частот.
         Аргументы:
             frequency - частота попаданий в интервалы, int;
             intervals - списо границ интервалов, list.
         """
-
+        hits = [x for x in h]
+        intervals = [x for x in range(length)]
         # ширина стобца - размер алфавита делаится на количество интервалов
         width = intervals[len(intervals) - 1] / (len(intervals) - 1)
 
-        plt.bar(intervals[:len(intervals) - 1], frequency, width)
+        plt.bar(intervals[:len(intervals) - 1], hits, width)
         plt.title('Chi2 Histogram')
         plt.xlabel('intervals')
         plt.ylabel('hits amount')
@@ -33,9 +35,12 @@ def chisqr_test(sequence, probs, interv_amount, alpha, drawing_graph, wfile):
     hits_amount = collections.Counter()
     for i in sequence:
         hits_amount[i] += 1
-            
+
+    p = [0]
+    p.extend(hits_amount.keys())
+    p.sort()
     if drawing_graph is True:
-        draw_histogram(hits_amount, intervals)
+        draw_histogram(hits_amount.values(), len(p))
 
     len_seq = len(sequence)
     # вычисляется статистика
@@ -55,7 +60,7 @@ def chisqr_test(sequence, probs, interv_amount, alpha, drawing_graph, wfile):
     hit_s_star = s_star > alpha
 
     S_crit = 18.307
-    S_crit = scipy.stats.chi2.ppf(1 - 0.05, r)
+    S_crit = scipy.stats.chi2.ppf(1 - 0.05, interv_amount)
 
     hit = S <= S_crit
 
