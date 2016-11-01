@@ -14,7 +14,7 @@ def tests_for_binom_neg(s, p, alpha, length):
         arr_binom_neg.append(number)
         oper += one_oper
 
-    with open("binom_neg.txt", "w") as f:
+    with open("binom_neg{}.txt".format(length), "w") as f:
         f.write(str(arr_binom_neg))
     # сопоставление каждого значения с вероятностью его получения по
     # отрицательному биномиальному закону распределения
@@ -24,7 +24,7 @@ def tests_for_binom_neg(s, p, alpha, length):
     #  подсчитывается кол-во элементов, вероятность которых больше 0.001
     binom_neg_count = std_alg.calculate_interv_amount(arr_binom_neg, s, p)
 
-    factor = 100
+    factor = 1
     binom_neg_teor_probs = [std_alg.distrib(x, s, p) * factor for x in range(max(arr_binom_neg))]
     print("Отрицательное биномиальное распределение:\n\ts - {}\n\tp - {}\n\tуровень значимости - {}\n\t"
           "длина последовательности - {}\n\tколичество операций - {}\n".format(s, p, alpha, length, oper))
@@ -46,7 +46,7 @@ def tests_for_poisson(lambd, alpha, length):
         arr_pois.append(number)
         oper += one_oper
 
-    with open("poisson.txt", "w") as f:
+    with open("poisson{}.txt".format(length), "w") as f:
         f.write(str(arr_pois))
     # сопоставление каждого значения с вероятностью его получения по
     # пауссоновскому закону распределения
@@ -56,7 +56,7 @@ def tests_for_poisson(lambd, alpha, length):
     #подсчитывается кол-во элементов, вероятность которых больше 0.001
     poisson_count = poisson.calculate_interv_amount(arr_pois, lambd)
 
-    factor = 100
+    factor = 1
     pois_teor_probs = [poisson.distrib(x, lambd) * factor for x in range(max(arr_pois))]
     print("Пуассоновское распределение:\n\tлямбда - {}\n\tуровень значимости - {}\n\t"
         "длина последовательности - {}\n\tсложность алгоритма - {}".format(lambd, alpha, length, oper))
@@ -74,10 +74,10 @@ def main():
     sys.stdout = open("output.txt", "w+")
     s, p, alpha, lambd = get_arguments()
 
-    tests_for_binom_neg(s, p, alpha, 40)
-    tests_for_poisson(lambd, alpha, 40)
+    #tests_for_binom_neg(s, p, alpha, 40)
+    #tests_for_poisson(lambd, alpha, 40)
 
-    tests_for_binom_neg(s, p, alpha, 100)
-    tests_for_poisson(lambd, alpha, 100)
+    tests_for_binom_neg(s, p, alpha, 1000)
+    #tests_for_poisson(lambd, alpha, 1000)
 
 main()

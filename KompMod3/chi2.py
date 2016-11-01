@@ -5,6 +5,10 @@ import scipy.stats as st
 import math
 import collections
 import matplotlib.pyplot as plt
+import random
+import scipy.special
+import scipy.integrate as integrate
+import numpy.random
 
 
 def chisqr_test(sequence, seq_probs, teor_probs, interv_amount, alpha, is_graph):
@@ -14,7 +18,7 @@ def chisqr_test(sequence, seq_probs, teor_probs, interv_amount, alpha, is_graph)
         seq_probs - соответствия элемента и его вероятности, словарь;
         alpha - уровень значимости;
         """
-    def draw_histogram(hits, points, teor_probs):
+    def draw_histogram(hits, points, teor_probs, seq):
         """Рисует гистограмму частот.
         Аргументы:
             hits - количество попаданий в точки, list;
@@ -23,8 +27,9 @@ def chisqr_test(sequence, seq_probs, teor_probs, interv_amount, alpha, is_graph)
         """
         # ширина стобца
         width = 0.5
+        h = [x / len(seq) for x in hits]
 
-        plt.bar(points[:len(points) - 1], hits, width)
+        plt.bar(points[:len(points) - 1], h, width)
 
         plt.plot(teor_probs, 'r')
         plt.title('Chi2 Histogram')
@@ -38,13 +43,14 @@ def chisqr_test(sequence, seq_probs, teor_probs, interv_amount, alpha, is_graph)
     hits_amount = collections.Counter()
     for i in sequence:
         hits_amount[i] += 1
+    interv_amount = len(hits_amount)
 
     points = [0]
     points.extend(hits_amount.keys())
     points.sort()
 
     if is_graph is True:
-        draw_histogram(hits_amount.values(), points, teor_probs)
+        draw_histogram(hits_amount.values(), points, teor_probs, sequence)
 
     len_seq = len(sequence)
     # вычисляется статистика
@@ -58,15 +64,23 @@ def chisqr_test(sequence, seq_probs, teor_probs, interv_amount, alpha, is_graph)
     r = interv_amount - 1
     def integrand(x, r):
         return x ** (r / 2 - 1) * sympy.exp(-x / 2)
+    #def calculate_a2(S, r):
+    #    x = sympy.symbols('x')
+    #    f = x ** (r / 2 - 1) * sympy.exp(-x / 2)
+    #    a2 = sympy.integrate(f, (x, S, sympy.oo)).doit().evalf()
+    #    return numpy.abs(a2 / (2 ** (r / 2.) * scipy.special.gamma(r / 2.)))
+
+    #prob_s = calculate_a2(s_star, r)
 
     prob_s = scipy.integrate.quad(integrand, s_star, numpy.inf, args = (r))
-    prob_s = prob_s[0] / (2 ** (r / 2) * math.gamma(int(r / 2)))
-
+    prob_s = prob_s[0] / (2 ** (r / 2) * scipy.special.gamma(r / 2))
+    
+    print("P(S>S*) - {}".format(prob_s))
     hit_s_star = prob_s > alpha
-
+    
     s_crit = scipy.stats.chi2.ppf(1 - 0.05, r)
 
-    print("значение критического значения статистики - {}".format(s_crit))
+    print("критическое значение статистики - {}".format(s_crit))
 
     hit = s_star <= s_crit
 

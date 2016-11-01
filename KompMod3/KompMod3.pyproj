@@ -28,9 +28,6 @@
   <ItemGroup>
     <Compile Include="chi2.py" />
     <Compile Include="main.py" />
-    <Compile Include="module1.py">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="poisson.py" />
     <Compile Include="standart_algorithm_with_rec.py">
       <SubType>Code</SubType>
@@ -38,7 +35,11 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="arguments.txt" />
+    <Content Include="binom_neg100.txt" />
+    <Content Include="binom_neg40.txt" />
     <Content Include="output.txt" />
+    <Content Include="poisson100.txt" />
+    <Content Include="poisson40.txt" />
   </ItemGroup>
   <Import Condition="Exists($(PtvsTargetsFile))" Project="$(PtvsTargetsFile)" />
   <Import Condition="!Exists($(PtvsTargetsFile))" Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
